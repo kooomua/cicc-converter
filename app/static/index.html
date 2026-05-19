@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CiCC Converter</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17202a;
+        --muted: #5f6c7b;
+        --line: #cdd6df;
+        --accent: #0f766e;
+        --bg: #f7f8f3;
+        --panel: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+      }
+      main {
+        width: min(920px, calc(100% - 32px));
+        margin: 40px auto;
+      }
+      h1 {
+        font-size: 32px;
+        margin: 0 0 8px;
+        letter-spacing: 0;
+      }
+      p {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      form,
+      .status {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+      }
+      label {
+        display: block;
+        font-weight: 700;
+        margin: 16px 0 8px;
+      }
+      input,
+      select,
+      button {
+        font: inherit;
+      }
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+      }
+      input[type="file"] {
+        width: 100%;
+        padding: 16px;
+        border: 1px dashed var(--line);
+        border-radius: 6px;
+        background: #fbfcfa;
+      }
+      button {
+        margin-top: 20px;
+        border: 0;
+        border-radius: 6px;
+        background: var(--accent);
+        color: white;
+        padding: 11px 16px;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .error {
+        color: #b42318;
+        font-weight: 700;
+        min-height: 24px;
+        margin-top: 12px;
+      }
+      pre {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        background: #101820;
+        color: #e6edf3;
+        padding: 16px;
+        border-radius: 6px;
+      }
+      a {
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .health {
+        margin-top: 18px;
+        color: var(--muted);
+      }
+      .health strong {
+        color: var(--ink);
+      }
+      .guide {
+        margin: 10px 0 0;
+      }
+      .guide ul {
+        margin: 8px 0 0 20px;
+        padding: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .state {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>CiCC Converter</h1>
+      <div class="guide">
+        <ul>
+          <li>Word：上传一篇 Word 文件。</li>
+          <li>TeX：上传打包好的 source zip。</li>
+        </ul>
+      </div>
+
+      <form id="job-form">
+        <label for="manuscript_id">Manuscript ID</label>
+        <input id="manuscript_id" name="manuscript_id" type="text" placeholder="例如 CiCC-2026-42-1-R2" />
+
+        <label for="primary_source">Primary source</label>
+        <select id="primary_source" name="primary_source">
+          <option value="">自动判断</option>
+          <option value="docx">使用 docx</option>
+          <option value="tex">使用 tex</option>
+        </select>
+
+        <label for="files">Input files</label>
+        <input id="files" name="files" type="file" multiple required />
+
+        <button id="submit" type="submit">开始处理</button>
+        <p class="error" id="form-error"></p>
+      </form>
+
+      <section class="status" hidden>
+        <h2>任务状态</h2>
+        <p class="state" id="status-text">转换中</p>
+        <p id="download"></p>
+      </section>
+    </main>
+
+    <script>
+      const form = document.querySelector("#job-form");
+      const button = document.querySelector("#submit");
+      const statusBox = document.querySelector(".status");
+      const statusText = document.querySelector("#status-text");
+      const download = document.querySelector("#download");
+      const formError = document.querySelector("#form-error");
+      let pollTimer = null;
+
+      async function poll(url) {
+        const res = await fetch(url);
+        const data = await res.json();
+        statusBox.hidden = false;
+        statusText.textContent = data.download_url ? "已完成" : "转换中";
+        if (data.download_url) {
+          download.innerHTML = `<a href="${data.download_url}">下载 output.zip</a>`;
+        }
+        if (["completed", "completed_with_warnings", "failed"].includes(data.status)) {
+          clearInterval(pollTimer);
+          button.disabled = false;
+          statusText.textContent = "已完成";
+        }
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        formError.textContent = "";
+        const selectedFiles = document.querySelector("#files").files;
+        if (!selectedFiles || selectedFiles.length === 0) {
+          formError.textContent = "请先选择至少一个 input 文件，或选择一个 zip 文件。";
+          return;
+        }
+        button.disabled = true;
+        download.textContent = "";
+        const body = new FormData(form);
+        const res = await fetch("/api/jobs", { method: "POST", body });
+        if (!res.ok) {
+          statusBox.hidden = false;
+          statusText.textContent = "转换中";
+          formError.textContent = await res.text();
+          button.disabled = false;
+          return;
+        }
+        const data = await res.json();
+        await poll(data.status_url);
+        pollTimer = setInterval(() => poll(data.status_url), 3000);
+      });
+
+    </script>
+  </body>
+</html>

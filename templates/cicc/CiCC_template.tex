@@ -1,0 +1,329 @@
+\documentclass{cicc}
+\firstpage{1}
+\articletype{Regular / Feature / Perspective / Review Article}
+
+\doi{doi: 10.4208/cicc.2026.xxx.xx}
+\publishedyear{2026}
+\volume{1}
+\issue{1}
+%\pagenumbers{1-2}
+
+\receiveddate{20 Oct. 2026}
+\revisiondate{25 Oct. 2026}
+\accepteddate{25 Dec. 2026}
+\onlinedate{28 Dec. 2026}
+\publisheddate{30 Dec. 2026}
+
+\title[Here is the Title]
+{Here is the Title}
+\author[1,2]{John Doe}
+\author[1,2,*]{Jane Smith}
+
+\affil[1]{\textit{Department of Chemistry, Faculty of Arts and Sciences, Beijing Normal University, Zhuhai 519087, China} }
+\affil[2]{\textit{College of Chemistry, Beijing Normal University, Beijing 100875, China} 
+\protect\vspace{1em}}
+
+\affil[*]{Corresponding authors: xxxxx@xxx}
+
+
+\let\leqslant=\leq
+
+\newtheorem{theorem}{Theorem}[section]
+
+\begin{document}
+
+\twocolumn[{
+  \vspace*{0.5em}
+  \maketitle
+  \thispagestyle{firstpage}
+  \label{firstpage}
+
+\begin{abstract}
+The abstract should be a single paragraph that summarises the content of the article.  
+
+\keywords{keyword1, keyword2, keyword3, keyword4.}
+\end{abstract}
+
+}] % End of twocolumn header block
+
+
+\section{Introduction}
+The introduction section should appear here\cite{berger1989local,tan_simple_moving,mckechnie2017arxiv,boor1973good,tullius1996comprehensive,authors_year_dataset,sheldrick1996shelxs,tullius1991title}.
+
+\section{Theoretical and computational details}
+The theoretical and computational methods or details should appear here.
+
+\subsection{Methods}
+The time-dependent Schr\"odinger equation is:
+\begin{equation} \label{eq:tdse}
+i\hbar\frac{\partial\Psi(\mathbf{r},t)}{\partial t} = \hat{H}\Psi(\mathbf{r},t).
+\end{equation}
+
+\section{Results and discussion}
+The results and discussions should appear here.
+
+\subsection{Title of subsection}
+All figures and tables must be mentioned in the text consecutively and numbered with Arabic numerals, such as Figure 1 or Table 1.
+
+\begin{figure}[hbt!]
+   \centering
+   \includegraphics[width=1.0\linewidth]{Figure_1.jpg}
+   \caption{Each figure must have a caption that includes the figure number and a brief description, preferably one or two sentences.}\label{sample-figure}
+\end{figure}
+
+% change \begin{table} to \begin{widetable} if you want to use the wide table environment
+\begin{table}[hbt!]
+\centering
+\caption{Each table must have a brief (one phrase or sentence) title that describes its contents.}\label{sample-table}
+\begin{tabular}{cccc}
+\hline
+Head 1\textsuperscript{[a]} & Head 2 & Head 3 & Head 4 \\
+\hline
+Column 1 & Column 2\textsuperscript{[b]} & Column 3 & Column 4 \\
+Column 1 & Column 2 & Column 3 & Column 4 \\
+Column 1 & Column 2 & Column 3 & Column 4 \\
+Column 1 & Column 2 & Column 3 & Column 4 \\
+Column 1 & Column 2 & Column 3 & Column 4 \\
+\hline
+\end{tabular}
+
+\vspace{0.5em}
+\raggedright\footnotesize
+{[a] Table footnote. [b] Table footnote.}
+\end{table}
+
+\section{Conclusion}
+The conclusion section should appear here.
+
+\begin{acknowledgments}
+Here is the place to acknowledge people, organizations, and financing (you may state grant numbers and sponsors here).
+\end{acknowledgments}
+
+\begin{Supporting_Information}
+The online version contains supplementary material available at website xxx. A listing of the contents of each file supplied as Supporting Information should be included.
+\end{Supporting_Information}
+
+\begin{Notes}
+The authors declare no competing financial interest.
+\end{Notes}
+
+\bibliographystyle{cicc}
+\bibliography{ref}
+\label{lastpage}
+\end{document}
+
+\section{Additional facilities}
+
+\subsection{Titles and author's name}
+
+In the CiCC style, the title of the article and the author's name (or
+authors' names) are used both at the beginning of the article for the
+main title and throughout the article as running headlines at the top
+of every page. The title is used on odd-numbered pages (rectos) and the
+author's name appears on even-numbered pages (versos). Although the
+main heading can run to several lines of text, the running headline
+must be a single line ($\leqslant 45$ characters). Moreover, the main
+heading can also incorporate new line commands (e.g. \verb"\\") but
+these are not acceptable in a running headline. To enable you to
+specify an alternative short title and an alternative short author's
+name, the standard \verb"\title" and \verb"\author" commands have been
+extended to take an optional argument to be used as the running
+headline. The running headlines for this guide were produced using the
+following code:
+\begin{verbatim}
+\title[Commun. Comput. Chem.,
+       \LaTeXe\ Guide for Authors]
+\end{verbatim}
+and
+\begin{verbatim}
+\author[B.L.N. Kennett]
+   {B.L.N. Kennett$^1$
+  \thanks{Pacific Region Office, CiCC} \\
+  $^{1}$Research School of Earth Sciences,
+    Australian National University,
+    Canberra ACT \emph{0200}, Australia
+  }
+\end{verbatim}
+The \verb"\thanks" note produces a footnote to the title or author.
+
+
+\subsection{Captions for continued figures and tables}
+
+The \verb"\caption*" command may be used to produce a caption with the
+same number as the previous caption (for the corresponding type of
+float). For instance, if a very large table does not fit on one page,
+it must be split into two floats; the second float should use the
+\verb"caption*" command with a suitable caption:
+\begin{verbatim}
+\begin{table}
+ \caption*{-- \textit{continued}}
+  \begin{tabular}{@{}lccll}
+  :
+  \end{tabular}
+\end{table}
+\end{verbatim}
+
+ \begin{figure}
+  \centering
+  \includegraphics[width=0.3\textwidth]{CICC.jpg}
+     \caption{An example figure in which space has been
+              left for the artwork.}
+     \label{sample-figure2}
+  \end{figure}
+
+
+\subsection{Tables}
+
+The CiCC style will cope with positioning of your tables and you
+should not use the positional qualifiers on the
+\verb"table" environment which would override these decisions. Table
+captions should be at the top, therefore the \verb"\caption" command
+should appear before the body of the table.
+
+The \verb"tabular" environment can be used to produce tables with
+single horizontal rules, which are allowed, if desired, at the head and
+foot only. This environment has been modified for the CiCC style in the
+following ways:
+\begin{enumerate}
+  \item additional vertical space is inserted on either side of a rule;
+  \item vertical lines are not produced.
+\end{enumerate}
+Commands to redefine quantities such as \verb"\arraystretch" should be
+omitted. For example, Table~\ref{symbols} is produced using the
+following commands.
+
+
+\begin{table}
+ \caption{Seismic velocities at major discontinuities.}
+ \label{symbols}
+ \begin{center}
+ \begin{tabular}{||lcccccc||}
+  \hline
+  Class & depth & radius
+        & $\alpha _{-}$ & $\alpha _{+}$
+        & $\beta _{-}$ & $\beta _{+}$ \\
+  \hline
+  ICB & 5154 & 1217 & 11.091 & 10.258
+        & 3.438 &  0. \\
+  CMB & 2889 & 3482 & 8.009 & 13.691
+        & 0. & 7.301 \\
+  \hline
+ \end{tabular}
+ \end{center}
+
+ \medskip
+
+\end{table}
+
+
+If you have a table that is to extend over two columns, you need to use
+\verb"table*" in a minipage environment, i.e., you can say
+\begin{verbatim}
+\begin{table*}
+\begin{minipage}{80mm}
+ \caption{Caption which will wrap round to the
+          width of the minipage environment.}
+ \begin{tabular}{%
+      :
+ \end{tabular}
+\end{minipage}
+\end{table*}
+\end{verbatim}
+The width of the minipage should more or less be the width of your table,
+so you can only guess on a value on the first pass. The value will have to
+be adjusted when your article is finally typeset, so don't worry
+about making it the exact size.
+
+\subsection{Running headlines}
+
+As described above, the title of the article and the author's name (or
+authors' names) are used as running headlines at the top of every page.
+The headline on right pages can list up to three names; for more than
+three use et~al. The \verb"\pagestyle" and \verb"\thispagestyle"
+commands should {\em not\/} be used. Similarly, t··he commands
+\verb"\markright" and \verb"\markboth" should not be necessary.
+
+\subsection{Bibliography}
+
+The bibliography is generated automatically by BibTeX using the \verb"cicc.bst" style. Below is a summary of the formatting conventions for each entry type.
+
+\subsubsection{General Rules}
+
+\textbf{Author Names:} Surname first, followed by initials with no comma between surname and initials. Multiple initials are separated by periods and tied with non-breaking spaces. Multiple authors are separated by commas; the last author is preceded by ``and'' (no Oxford comma for two authors; ``and'' for three or more).\\
+Example: \verb"Berger M.~J. and Colella P." or \verb"Tan Z.~J., Tang T. and Zhang Z.~R."
+
+\textbf{Punctuation Between Fields:} Fields are separated by commas. Each entry ends with a period.
+
+\subsubsection{Journal Articles (\texttt{@article})}
+
+Format: Authors, Title, \emph{Journal Name}, \textbf{Volume}(Issue) (Year), Pages.
+
+\begin{itemize}
+  \item The article title appears in plain text (no italics, no quotes).
+  \item The journal name is italicized and abbreviated. If a \verb"shortjournal" field is provided, it is used instead of the full journal name. Common full journal names in the output \verb".bib" copy should be normalized to abbreviations before BibTeX.
+  \item The volume number is in bold. If an issue number is present, it follows in parentheses immediately after the volume.
+  \item The year is enclosed in parentheses after the volume/issue.
+  \item Page ranges follow the year, separated by a comma, using an en-dash.
+\end{itemize}
+Example output: Berger M.~J. and Colella P., Local adaptive mesh refinement for shock hydrodynamics, \emph{J. Comput. Phys.}, \textbf{82} (1989), 62--84.
+
+\subsubsection{Books and Book Chapters (\texttt{@incollection}, \texttt{@inbook})}
+
+Format: Authors, Title, In \emph{Book Title}, Vol.~\textbf{Volume}, (Eds.\ Editor Names), Publisher, Address, Year, pp.~Pages.
+
+\begin{itemize}
+  \item The chapter/article title appears in plain text.
+  \item The book title is preceded by ``In'' and italicized.
+  \item If a volume is present, it appears as ``Vol.~\textbf{N}''.
+  \item Editors are listed in parentheses as ``(Eds.\ ...)'' or ``(Ed.\ ...)''.
+  \item Publisher, address, and year follow, separated by commas.
+  \item Page ranges are prefixed with ``pp.'' (or ``p.'' for a single page).
+\end{itemize}
+Example output: Tullius T.~D., Supramolecular reactivity and transport: Bioinorganic systems, In \emph{Comprehensive Supramolecular Chemistry}, Vol.~\textbf{5}, (Eds. Atwood J.~L., Davies J.~E.~D., MacNicol D.~D., V{\"o}gtle F. and Suslick K.~S.), Pergamon, Oxford, 1996, pp.~317--343.
+
+\subsubsection{Standalone Books (\texttt{@book})}
+
+Format: Authors, \emph{Book Title}, Publisher, Address, Year.
+
+\begin{itemize}
+  \item The book title is italicized.
+  \item Publisher, address, and year follow, separated by commas.
+\end{itemize}
+
+\subsubsection{Preprints and Miscellaneous (\texttt{@misc})}
+
+Format: Authors, Title, Year.
+
+\begin{itemize}
+  \item The title appears in plain text.
+  \item DOI, URL, and ISSN fields are not displayed in the final reference list.
+\end{itemize}
+Example output: McKechnie S., Frost J.~M., ..., Dynamic symmetry breaking and spin splitting in metal halide perovskites, 2017.
+
+\subsubsection{Datasets (\texttt{@dataset})}
+
+Format: Authors, \emph{Dataset Title}, Year.
+
+\begin{itemize}
+  \item The dataset title is italicized (treated like a book title).
+\end{itemize}
+
+\subsubsection{Programs and Manuals (\texttt{@manual})}
+
+Format: Authors, \emph{Program Title}, Organization, Address, Year.
+
+\begin{itemize}
+  \item The program/manual title is italicized.
+  \item Organization and address follow, separated by commas.
+\end{itemize}
+Example output: Sheldrick G.~M., \emph{SHELXS-96, program for the solution of crystal structures}, University of G{\"o}ttingen, G{\"o}ttingen, Germany, 1996.
+
+\subsubsection{Theses (\texttt{@phdthesis}, \texttt{@mastersthesis})}
+
+Format: Authors, \emph{Thesis Title}, School, Address, Year.
+
+\begin{itemize}
+  \item The thesis title is italicized.
+  \item The school name, address, and year follow, separated by commas.
+\end{itemize}
+Example output: Tullius T.~D., \emph{Title of PhD thesis}, University of Newcastle, UK, 1991.

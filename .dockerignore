@@ -1,0 +1,11 @@
+.env
+.venv
+__pycache__
+*.pyc
+.DS_Store
+jobs
+run_log
+output
+input/*
+!input/.gitkeep
+snapshots

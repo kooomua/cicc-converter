@@ -1,0 +1,13 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+jobs/
+output/*
+!output/.gitkeep
+run_log/*
+!run_log/.gitkeep
+input/*
+!input/.gitkeep
+snapshots/
