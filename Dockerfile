@@ -15,6 +15,7 @@ RUN apt-get update \
         texlive-science \
         texlive-bibtex-extra \
         texlive-plain-generic \
+        tex-gyre \
         imagemagick \
         libreoffice \
     && rm -rf /var/lib/apt/lists/*
