@@ -14,6 +14,7 @@ RUN apt-get update \
         texlive-fonts-recommended \
         texlive-science \
         texlive-bibtex-extra \
+        imagemagick \
         libreoffice \
     && rm -rf /var/lib/apt/lists/*
 

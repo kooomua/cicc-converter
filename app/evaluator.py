@@ -24,25 +24,35 @@ def libreoffice_bin() -> str | None:
     return None
 
 
-def convert_figure_for_pdflatex(source: Path, target: Path) -> None:
+def imagemagick_bin() -> str | None:
+    for candidate in (shutil.which("magick"), shutil.which("convert")):
+        if candidate:
+            return candidate
+    return None
+
+
+def convert_figure_for_pdflatex(source: Path, target: Path) -> bool:
     suffix = source.suffix.lower()
     if suffix in {".tif", ".tiff"}:
         png_target = target.with_suffix(".png")
         png_target.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            subprocess.run(
-                ["sips", "-s", "format", "png", str(source), "--out", str(png_target)],
-                capture_output=True,
-                text=True,
-                timeout=120,
-                check=True,
-            )
-        except (subprocess.SubprocessError, FileNotFoundError):
-            return
+        commands = []
+        if shutil.which("sips"):
+            commands.append(["sips", "-s", "format", "png", str(source), "--out", str(png_target)])
+        image_tool = imagemagick_bin()
+        if image_tool:
+            commands.append([image_tool, str(source), str(png_target)])
+        for cmd in commands:
+            try:
+                subprocess.run(cmd, capture_output=True, text=True, timeout=120, check=True)
+                return png_target.exists()
+            except (subprocess.SubprocessError, FileNotFoundError):
+                continue
+        return False
     elif suffix in {".emf", ".wmf"}:
         soffice = libreoffice_bin()
         if not soffice:
-            return
+            return False
         pdf_target = target.with_suffix(".pdf")
         pdf_target.parent.mkdir(parents=True, exist_ok=True)
         try:
@@ -53,8 +63,10 @@ def convert_figure_for_pdflatex(source: Path, target: Path) -> None:
                 timeout=180,
                 check=True,
             )
+            return pdf_target.exists()
         except subprocess.SubprocessError:
-            return
+            return False
+    return False
 
 
 def run_static_checks(tex_file: Path, figures_dir: Path, run_log_dir: Path) -> dict[str, Any]:
@@ -160,7 +172,9 @@ def evaluate_output(output_dir: Path, manuscript_id: str, run_log_dir: Path) -> 
 def copy_supporting_files(input_dir: Path, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     figures_dir = output_dir / "figures"
+    original_figures_dir = output_dir / "original_figures"
     figures_dir.mkdir(parents=True, exist_ok=True)
+    conversion_notes = []
 
     for template in ("cicc.cls", "cicc.bst"):
         shutil.copy2(PROJECT_ROOT / "templates" / "cicc" / template, output_dir / template)
@@ -183,6 +197,27 @@ def copy_supporting_files(input_dir: Path, output_dir: Path) -> None:
 
         target = figures_dir / relative_path
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(path, target)
         if path.suffix.lower() in {".emf", ".wmf", ".tif", ".tiff"}:
-            convert_figure_for_pdflatex(path, target)
+            original_target = original_figures_dir / relative_path
+            original_target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, original_target)
+            converted = convert_figure_for_pdflatex(path, target)
+            converted_target = target.with_suffix(".png" if path.suffix.lower() in {".tif", ".tiff"} else ".pdf")
+            status = "converted" if converted else "conversion failed"
+            conversion_notes.append(
+                f"- {original_target.relative_to(output_dir)} -> {converted_target.relative_to(output_dir)} ({status})"
+            )
+        else:
+            shutil.copy2(path, target)
+
+    if conversion_notes:
+        notes = [
+            "Image conversion notes",
+            "",
+            "LaTeX should reference converted files under figures/.",
+            "Original TIFF/EMF/WMF files are preserved under original_figures/ as backup/reference.",
+            "",
+            *conversion_notes,
+            "",
+        ]
+        (output_dir / "IMAGE_CONVERSION_NOTES.txt").write_text("\n".join(notes), encoding="utf-8")

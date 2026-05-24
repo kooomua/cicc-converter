@@ -37,7 +37,8 @@ Required local tools:
 - `pdflatex`
 - `bibtex`
 - `pandoc`
-- LibreOffice `soffice` for converting Word-extracted `.emf/.wmf` images to PDF
+- LibreOffice `soffice` for converting `.emf/.wmf` images to PDF
+- ImageMagick `magick` or `convert` for converting `.tif/.tiff` images to PNG
 
 Python dependencies are listed in `requirements.txt`.
 
@@ -84,9 +85,14 @@ jobs/<job_id>/
   <manuscript_id>_output.zip
 ```
 
-The zip contains the generated `.tex`, compiled `.pdf`, `cicc.cls`, `cicc.bst`, logs, source figures, and converted figures.
+The zip contains the generated `.tex`, compiled `.pdf`, `cicc.cls`, `cicc.bst`, logs, converted figures, and original source images kept as backup/reference.
 
-Office image formats such as `.emf` and `.wmf` are converted to PDF for LaTeX use. The original source image files are also kept in the final package.
+Special image formats are handled as follows:
+
+- `.tif/.tiff` files are converted to `.png` under `figures/`.
+- `.emf/.wmf` files are converted to `.pdf` under `figures/`.
+- Original `.tif/.tiff/.emf/.wmf` files are preserved under `original_figures/`.
+- `IMAGE_CONVERSION_NOTES.txt` records the conversion mapping.
 
 ## Acceptance Standard
 

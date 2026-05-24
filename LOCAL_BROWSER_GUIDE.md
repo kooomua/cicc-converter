@@ -95,6 +95,16 @@ jobs/JOB_ID/output/
 jobs/JOB_ID/run_log/
 ```
 
+特殊图片会同时保留可编译版本和原始候补文件：
+
+```text
+jobs/JOB_ID/output/figures/              # LaTeX 使用的 png/pdf 图片
+jobs/JOB_ID/output/original_figures/     # 原始 tif/tiff/emf/wmf 候补文件
+jobs/JOB_ID/output/IMAGE_CONVERSION_NOTES.txt
+```
+
+`.tif/.tiff` 会转成 `.png`，`.emf/.wmf` 会转成 `.pdf`。
+
 如果失败，先看：
 
 ```text
