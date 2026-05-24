@@ -10,6 +10,7 @@ RUN apt-get update \
         pandoc \
         texlive-latex-base \
         texlive-latex-extra \
+        texlive-fonts-extra \
         texlive-fonts-recommended \
         texlive-science \
         texlive-bibtex-extra \
