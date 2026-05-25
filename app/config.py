@@ -35,6 +35,9 @@ EVAL_LAYOUT_REPAIR_ENABLED = os.getenv("CICC_EVAL_LAYOUT_REPAIR_ENABLED", "true"
     "on",
 }
 PUBLIC_BASE_URL = os.getenv("CICC_PUBLIC_BASE_URL", "")
+AUTH_USERNAME = os.getenv("CICC_AUTH_USERNAME", "").strip()
+AUTH_PASSWORD = os.getenv("CICC_AUTH_PASSWORD", "")
+AUTH_ENABLED = bool(AUTH_USERNAME and AUTH_PASSWORD)
 
 PDFLATEX_BIN = os.getenv("PDFLATEX_BIN", "pdflatex")
 BIBTEX_BIN = os.getenv("BIBTEX_BIN", "bibtex")

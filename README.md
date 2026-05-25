@@ -26,7 +26,7 @@ Not active:
 
 - PDF screenshot / visual QA
 - IR conversion route
-- Multi-user account system
+- Individual user accounts or role management
 - Database-backed job history
 
 ## Runtime Dependencies
@@ -70,7 +70,11 @@ CICC_MAX_CONVERSION_ATTEMPTS=2
 CICC_MAX_REPAIR_ATTEMPTS=3
 CICC_EVAL_LAYOUT_REPAIR_ENABLED=true
 CICC_MAX_LAYOUT_REPAIR_ATTEMPTS=1
+CICC_AUTH_USERNAME=
+CICC_AUTH_PASSWORD=
 ```
+
+Set both `CICC_AUTH_USERNAME` and `CICC_AUTH_PASSWORD` to protect the web page and every API/download route with one shared browser login. Do not expose password-protected access over plain HTTP in production; configure HTTPS first.
 
 ## Output
 
