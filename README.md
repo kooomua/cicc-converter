@@ -2,6 +2,8 @@
 
 Local browser app for converting CiCC manuscript inputs into a LaTeX/PDF output package.
 
+For the full runtime structure, see `docs/ARCHITECTURE.md`.
+
 ## Current Scope
 
 Supported inputs:
@@ -15,12 +17,34 @@ Active pipeline:
 ```text
 Inspector
 → Converter
+→ Conversion passes
 → postprocess
 → Evaluator
 → AI compile repair when needed
 → evaluator-based equation/figure/table layout repair when needed
 → output zip
 ```
+
+The Converter remains the draft generator. Conversion passes then apply smaller,
+auditable checks before compilation:
+
+```text
+00-preflight
+01-frontmatter
+02-heading-keyword
+03-body-paragraph
+04-equation
+05-figure-table
+06-reference
+07-compile-repair
+08-layout
+09-final
+```
+
+Current pass implementation focuses on high-impact stability items: frontmatter
+placement/markers, missing table/chemistry packages, Word reference recovery,
+and final citation/bibliography checks. The pass files under `skills/passes/`
+are the rule source for future refinements.
 
 Not active:
 

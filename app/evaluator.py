@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -11,6 +12,9 @@ from .config import BIBTEX_BIN, PDFLATEX_BIN, PROJECT_ROOT
 
 
 FIGURE_SUFFIXES = {".pdf", ".eps", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".emf", ".wmf"}
+CITE_RE = re.compile(r"\\(?:cite|citet|citep|citealp|citeauthor|citeyear)\*?(?:\[[^\]]*\]){0,2}\{([^{}]+)\}")
+THEBIB_RE = re.compile(r"\\begin\{thebibliography\}\{[^{}]*\}.*?\\end\{thebibliography\}", re.DOTALL)
+BIB_COMMAND_RE = re.compile(r"\\bibliography\{([^{}]+)\}")
 
 
 def libreoffice_bin() -> str | None:
@@ -86,6 +90,38 @@ def run_static_checks(tex_file: Path, figures_dir: Path, run_log_dir: Path) -> d
     return json.loads(result.stdout)
 
 
+def add_reference_static_checks(static_report: dict[str, Any], tex_file: Path, output_dir: Path) -> dict[str, Any]:
+    text = tex_file.read_text(encoding="utf-8", errors="replace")
+    citation_keys = []
+    for match in CITE_RE.finditer(text):
+        citation_keys.extend(key.strip() for key in match.group(1).split(",") if key.strip())
+    if not citation_keys:
+        return static_report
+
+    has_thebibliography = bool(THEBIB_RE.search(text))
+    bibliography_names = [name.strip() for match in BIB_COMMAND_RE.finditer(text) for name in match.group(1).split(",")]
+    bib_files = [output_dir / f"{name}.bib" for name in bibliography_names if name]
+    has_named_bib = any(path.exists() for path in bib_files)
+    has_any_bib = any(output_dir.glob("*.bib"))
+    has_bbl = any(output_dir.glob("*.bbl"))
+
+    if has_thebibliography or has_named_bib or has_any_bib or has_bbl:
+        return static_report
+
+    static_report.setdefault("issues", []).append(
+        {
+            "severity": "critical",
+            "rule": "reference-missing-data",
+            "line": 1,
+            "detail": (
+                "citation commands exist, but no thebibliography block, .bib file, or .bbl file was found"
+            ),
+        }
+    )
+    static_report["issue_count"] = len(static_report.get("issues", []))
+    return static_report
+
+
 def compile_latex(output_dir: Path, manuscript_id: str, run_log_dir: Path) -> dict[str, Any]:
     run_log_dir.mkdir(parents=True, exist_ok=True)
     tex_name = f"{manuscript_id}.tex"
@@ -121,10 +157,12 @@ def compile_latex(output_dir: Path, manuscript_id: str, run_log_dir: Path) -> di
     (run_log_dir / "compile_output.txt").write_text(compile_output, encoding="utf-8")
 
     pdf_path = output_dir / f"{manuscript_id}.pdf"
-    errors = [line for line in compile_output.splitlines() if line.startswith("!")]
+    final_log_path = output_dir / f"{manuscript_id}.log"
+    final_log = final_log_path.read_text(encoding="utf-8", errors="replace") if final_log_path.exists() else compile_output
+    errors = [line for line in final_log.splitlines() if line.startswith("!")]
     warnings = [
         line
-        for line in compile_output.splitlines()
+        for line in final_log.splitlines()
         if "Warning" in line or "Overfull \\hbox" in line or "Underfull \\hbox" in line
     ]
     return {
@@ -139,6 +177,7 @@ def evaluate_output(output_dir: Path, manuscript_id: str, run_log_dir: Path) -> 
     tex_file = output_dir / f"{manuscript_id}.tex"
     figures_dir = output_dir / "figures"
     static_report = run_static_checks(tex_file, figures_dir, run_log_dir)
+    static_report = add_reference_static_checks(static_report, tex_file, output_dir)
     compile_report = compile_latex(output_dir, manuscript_id, run_log_dir)
 
     blocking = [issue for issue in static_report.get("issues", []) if issue.get("severity") == "critical"]

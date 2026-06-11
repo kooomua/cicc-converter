@@ -10,6 +10,7 @@ from .config import (
     MAX_LAYOUT_REPAIR_ATTEMPTS,
     MAX_REPAIR_ATTEMPTS,
 )
+from .conversion_passes import run_conversion_passes
 from .evaluator import copy_supporting_files, evaluate_output
 from .inspector import inspect_input
 from .layout_repairer import repair_layout_with_ai
@@ -37,17 +38,22 @@ def package_and_finish(
     eval_report: dict,
     attempts_used: int,
     layout_report: dict | None = None,
+    pass_report: dict | None = None,
 ) -> None:
     update_status(job_root, stage="packaging")
     zip_path = make_zip(output_dir, job_root / f"{manuscript_id}_output.zip")
     layout_quality = (layout_report or {}).get("overall_visual_quality")
+    pass_quality = (pass_report or {}).get("overall_result")
     evaluator_passed = eval_report["overall_result"] == "pass"
     layout_passed = layout_quality in {None, "pass"}
-    final_status = "completed" if evaluator_passed and layout_passed else "completed_with_warnings"
+    passes_passed = pass_quality in {None, "PASS"}
+    final_status = "completed" if evaluator_passed and layout_passed and passes_passed else "completed_with_warnings"
     if not evaluator_passed:
         error = "Output generated, but evaluator reported issues."
     elif not layout_passed:
         error = "Output generated, but evaluator reported remaining equation/figure/table layout warnings."
+    elif not passes_passed:
+        error = "Output generated, but conversion passes reported issues."
     else:
         error = None
     update_status(
@@ -62,6 +68,7 @@ def package_and_finish(
         max_layout_repair_attempts=MAX_LAYOUT_REPAIR_ATTEMPTS,
         conversion_route="direct_ai",
         layout_report=layout_report,
+        pass_report=pass_report,
     )
 
 
@@ -226,6 +233,7 @@ def run_job(job_root: Path, primary_source: str | None = None) -> None:
         copy_supporting_files(input_dir, output_dir)
         feedback_text = None
         eval_report = None
+        pass_report = None
         attempts_used = 0
 
         for attempt in range(1, MAX_CONVERSION_ATTEMPTS + 1):
@@ -253,6 +261,18 @@ def run_job(job_root: Path, primary_source: str | None = None) -> None:
                 attempt=attempt,
             )
             copy_supporting_files(input_dir, output_dir)
+            update_status(job_root, stage=f"conversion_passes_attempt_{attempt}", attempts_used=attempts_used)
+            pass_report = run_conversion_passes(
+                input_dir=input_dir,
+                output_dir=output_dir,
+                tex_file=output_tex,
+                recommended_path=inspection["recommended_path"],
+                pass_log_dir=attempt_log_dir / "passes",
+            )
+            (run_log_dir / "latest_conversion_pass_report.json").write_text(
+                json.dumps(pass_report, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
             postprocess_tex(output_tex, output_dir)
             (output_dir / f"{manuscript_id}.attempt_{attempt}.tex").write_text(
                 output_tex.read_text(encoding="utf-8"),
@@ -306,6 +326,17 @@ def run_job(job_root: Path, primary_source: str | None = None) -> None:
                     )
                     repair_error_feedback = feedback_from_eval(eval_report) + f"\n\nAI repair failed: {repair_exc}"
                     break
+                pass_report = run_conversion_passes(
+                    input_dir=input_dir,
+                    output_dir=output_dir,
+                    tex_file=output_tex,
+                    recommended_path=inspection["recommended_path"],
+                    pass_log_dir=repair_log_dir / "passes",
+                )
+                (run_log_dir / "latest_conversion_pass_report.json").write_text(
+                    json.dumps(pass_report, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
                 postprocess_tex(output_tex, output_dir)
                 (output_dir / f"{manuscript_id}.attempt_{attempt}.repair_{repair_attempt}.tex").write_text(
                     output_tex.read_text(encoding="utf-8"),
@@ -334,7 +365,7 @@ def run_job(job_root: Path, primary_source: str | None = None) -> None:
                 eval_report,
                 attempts_used,
             )
-        package_and_finish(job_root, output_dir, manuscript_id, eval_report, attempts_used, layout_report)
+        package_and_finish(job_root, output_dir, manuscript_id, eval_report, attempts_used, layout_report, pass_report)
     except Exception as exc:
         (run_log_dir / "error.txt").write_text(traceback.format_exc(), encoding="utf-8")
         update_status(job_root, status="failed", stage="error", error=str(exc))
